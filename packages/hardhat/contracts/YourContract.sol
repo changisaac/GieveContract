@@ -1,27 +1,35 @@
-pragma solidity >=0.8.0 <0.9.0;
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <0.9.0;
 
-import "hardhat/console.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol"; 
-// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract YourContract {
+contract YourContract is Ownable {
 
-  event SetPurpose(address sender, string purpose);
+    event Received(address from, uint amount);
+    event Distributed(address to, uint amount);
 
-  string public purpose = "Building Unstoppable Apps!!!";
+    // This function allows anyone to deposit funds to the contract
+    function depositFunds() external payable {
+        require(msg.value > 0, "Must send some value");
+        emit Received(msg.sender, msg.value);
+    }
 
-  constructor() payable {
-    // what should we do on deploy?
-  }
+    // This function allows the contract owner to distribute funds to a specified address
+    function distributeFunds(address payable recipient, uint amount) external onlyOwner {
+        require(address(this).balance >= amount, "Not enough funds in contract");
+        recipient.transfer(amount);
+        emit Distributed(recipient, amount);
+    }
 
-  function setPurpose(string memory newPurpose) public payable {
-      purpose = newPurpose;
-      console.log(msg.sender,"set purpose to",purpose);
-      emit SetPurpose(msg.sender, purpose);
-  }
+    // Returns the balance of the contract
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
 
-  // to support receiving ETH by default
-  receive() external payable {}
-  fallback() external payable {}
+    // To support receiving ETH directly to the contract
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+
+    fallback() external payable {}
 }
