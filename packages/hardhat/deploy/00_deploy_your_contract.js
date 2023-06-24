@@ -65,6 +65,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   // Verify from the command line by running `yarn verify`
 
+  console.log(chainId)
+
   // You can also Verify your contracts with Etherscan here during the deployment process
   try {
     if (chainId !== localChainId) {
